@@ -46,11 +46,7 @@ function eraseCookie(name) {
 
 function printCookies() {
 	const cookies = getCookies();
-console.log(`${JSON.stringify(cookies, null, 4)}`);
-	//cookies.map((e, i) => {
-	//	console.log(`Cookie ${i}: ${e}`);
-
-	//});
+	console.log(`${JSON.stringify(cookies, null, 4)}`);
 }
 
 
@@ -69,7 +65,6 @@ async function loginGoogleUser() {
 	eraseCookie('login');
 	eraseCookie('email');
 
-	//console.log(`in loginGoogleUser: user = ${JSON.stringify(user, null, 4)}`);
 	if(user != null) {
 		console.log(`Logging in Google user ${user.name}`);
 		setCookie('name', user.name, 7);
@@ -88,23 +83,17 @@ async function getUserInfo(email) {
 		console.log(`email is not a string`);
 		return null;
 	}
-	//console.log(`looking for ${email}`);
 
 	const user = await axios.get(API_URL + '/user/find/' + email)
 	.then((res) => {
-		//console.log(`inside axios call in getUserInfo: ${JSON.stringify(res.data, null, 4)}`);
-		//console.log(`res.ok = ${res.data.ok}`);
 		if (res.data.ok === true) {
 			let auser = (({_id, name, email, accessLevel}) => ({_id, name, email, accessLevel}))(res.data.data);
-			//console.log(`getUserInfo: ${JSON.stringify(auser, null, 4)}`);
 			return auser;
-			//return user;
 		} else {
 			return "";
 		}
 	});
 
-	//console.log(`USER = ${JSON.stringify(user, null, 4)}`);
 	return user;
 }
 
@@ -121,11 +110,9 @@ async function getUserAccounts(email) {
 		console.log(`inside axios call in getUserAccounts: ${JSON.stringify(res.data, null, 4)}`);
 		console.log(`res.ok = ${res.data.ok}`);
 		if (res.data.ok === true) {
-			//let ret = res.data.data;//(({_id, name, email, accessLevel}) => ({_id, name, email, accessLevel}))(res.data.data);
-			//console.log(`getUserInfo: ${JSON.stringify(auser, null, 4)}`);
 			return res.data.data;
 		} else {
-			return null;// = "";
+			return null;
 		}
 	});
 
@@ -136,25 +123,20 @@ async function getUserAccounts(email) {
 async function getAccounts(email) {
 	console.log(`getAccounts: email = ${email}`);
 
-	//if(email != null) {
-		//var accounts = new Array;
-		const results = await axios.get(API_URL+"/accounts/find/"+email)
-			.then((res) => {
-				console.log(`AccountInfo res.ok = ${res.data.ok}`);
-				//console.log(`AccountInfo data = ${JSON.stringify(res.data, null, 4)}`);
-				if(res.data.ok === true) {
-					return res.data.data;
-				} else {
-					//console.log(`no accounts found`);
-					return null;
-				}
-		})
-		.catch((err) => {
-			console.log(err);
-		});
-		//console.log(`type of results = ${JSON.stringify(results, null, 4)}`);
-		return results;
-	//}
+	const results = await axios.get(API_URL+"/accounts/find/"+email)
+		.then((res) => {
+			console.log(`AccountInfo res.ok = ${res.data.ok}`);
+			if(res.data.ok === true) {
+				return res.data.data;
+			} else {
+				return null;
+			}
+	})
+	.catch((err) => {
+		console.log(err);
+	});
+
+	return results;
 }
 
 

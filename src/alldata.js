@@ -1,49 +1,67 @@
-import React from 'react'
 import { Switch, Route } from 'react-router-dom'
 import { Card, UserContext } from './context';
+import { React, useContext, useState, setState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { API_URL } from './config';
+import axios from "axios";
+import { getCookie, setCookie } from './util';
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
 
 	
 const AllData = (props) => {
-	const ctx = React.useContext(UserContext);
-  
-  
- /* const tableData = ctx.users.map((e, i) =>
-		<tr key={e.name+i}>
-			<td>{e.name}</td>
-			<td>{e.email}</td>
-			<td>{e.password}</td>
-			<td>{e.balance}</td>
-		</tr>
-	);*/
+	const [ users, setUsers ]					= useState(null);
+
+	useEffect(() => {
+	//function getAllUsers() {
+	//	console.log(`API_URL = ${API_URL}`);
+		
+		axios.get(API_URL+"/user/all").then((res) => {
+			console.log(`${JSON.stringify(res.data, null, 4)}`);
+			setUsers(res.data);
+		//if (res.data.ok === true) {
+		});
+	
+	}, []);
+
 	
 	
-	return (<></>)
-  /*return (
+	//return (<></>)
+  return (
   		<Card
 		headercolor="primary"
 		bodycolor="white"
 		bgcolor="primary"
-		header="Deposit"
+		header="All Users"
 		width="50rem"
 		body={(
 			<>
-			<table key="allDataTable" className="table">
+			<table className="table">
 				<thead>
 					<tr>
 						<th scope="col">Email</th>
 						<th scope="col">Name</th>
 						<th scope="col">Password</th>
-						<th scope="col">Balance</th>
+						<th scope="col">Account Type</th>
+						<th scope="col">Access Level</th>
 					</tr>
 				</thead>
 				<tbody>
-					{tableData}
+				{users && users.map((e) => (
+					<tr>
+						<td>{e.email}</td>
+						<td>{e.name}</td>
+						<td>********</td>
+						<td>{e.type}</td>
+						<td>{e.accessLevel}</td>
+					</tr>
+				))}
 				</tbody>
 			</table>
 			</>
 		)}
 		/>
-  )*/
+  )
 }
 
 export default AllData

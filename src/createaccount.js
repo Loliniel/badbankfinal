@@ -1,35 +1,47 @@
-import React from 'react'
-import { Switch, Route } from 'react-router-dom'
+import { API_URL } from './config';
+import axios from "axios";
+import { useState, useContext } from 'react'
+//import React from 'react'
+import { Switch, Route, useNavigate } from 'react-router-dom'
 import { Card, UserContext } from './context';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
+import { getCookie, setCookie } from './util';
 
 
 const CreateAccount = (props) => {
-	const [show, setShow]         = React.useState(true);
-	const [status, setStatus]     = React.useState('');
-	const [name, setName]         = React.useState('');
-	const [email, setEmail]       = React.useState('');
-	const [password, setPassword] = React.useState('');
-	const [showError, setShowError]					= React.useState(false);
-	const [errorTitle, setErrorTitle]				= React.useState("");
-	const [errorText, setErrorText]					= React.useState("");
-	const ctx = React.useContext(UserContext);
+	const [show, setShow]         = useState(true);
+	const [status, setStatus]     = useState('');
+	const [name, setName]         = useState('');
+	const [email, setEmail]       = useState('');
+	const [password, setPassword] = useState('');
+	const [showError, setShowError]					= useState(false);
+	const [errorTitle, setErrorTitle]				= useState("");
+	const [errorText, setErrorText]					= useState("");
+	const { authenticated, setAuthenticated } = useContext(UserContext);
+	//const ctx = React.useContext(UserContext);
+
+	const navigate = useNavigate();
 	
 	
 	function isValidEmail(emailToTest) {
 		const emailRegEx = /^([\w\-.])+@([\w\-])+\.([\w\-\.]{2,4})$/;
+
+		console.log(`email to test = ${emailToTest}`);
 		
-		if(!emailToTest.match(emailRegEx))
+		if(!emailToTest.match(emailRegEx)) {
+			console.log(`isValidEmail returning false.`);
 			return false;
+		}
 		
+		console.log(`isValidEmail returning true.`);
 		return true;
 	}
 	
 	
 	function validateEmail(event) {
 		const emailRegEx = /^([\w\-.])+@([\w\-])+\.([\w\-\.]{2,4})$/;
-		var emailField = document.getElementById("email");
+		var emailField = event.target;// document.getElementById("email");
 		var newEmail = emailField.value;
 		
 		if(isValidEmail(newEmail)) {//newEmail.match(emailRegEx)) {
@@ -56,6 +68,8 @@ const CreateAccount = (props) => {
 	}
 
 	function validate(field, label) {
+		console.log(`validating ${field} with ${label}`);
+
 		if (!field) {
 			setErrorTitle(`Error!`);
 			setErrorText(`Error: ${label} field is blank!`);
@@ -66,7 +80,9 @@ const CreateAccount = (props) => {
 		}
 		
 		if(label == "email") {
+			//console.log(`isValidEmail = ${isValidEmail(field)}`);
 			if(!isValidEmail(field)) {
+				//console.log(`isValidEmail returned false?`);
 				setErrorTitle(`Error!`);
 				setErrorText(`Error: email is not valid!`);
 				setShowError(true);
@@ -78,7 +94,7 @@ const CreateAccount = (props) => {
 		if(label == "password") {
 			if(!isValidPassword(field)) {
 				setErrorTitle(`Error!`);
-				setErrorText(`Error: email is not valid!`);
+				setErrorText(`Error: password is not valid!`);
 				setShowError(true);
 				
 				return false;
@@ -143,7 +159,28 @@ const CreateAccount = (props) => {
 		if (!validate(name,     'name'))     return;
 		if (!validate(email,    'email'))    return;
 		if (!validate(password, 'password')) return;
-		ctx.users.push({name,email,password,balance:0});
+
+		console.log(`email = ${email}\npassword = ${password}`);
+		console.log(`API_URL = ${API_URL}`);
+			axios.get(API_URL+"/user/create/"+name+"/"+email+"/"+password)
+			.then((res) => {
+			if (res.data.ok === true) {
+				setCookie('name', res.data.data.name, 7);
+				setCookie('email', res.data.data.email, 7);
+				setCookie('id', res.data.data._id, 7);
+				setCookie('accessLevel', res.data.data.accessLevel, 7);
+				setAuthenticated(true);
+
+				setTimeout(() => {
+					console.log(`redirecting to main page ... `);
+					navigate('/');
+				}, 1500);
+			} else {
+				console.log(`Ok false: ${res.data.data}`);
+			}
+		});
+
+		//ctx.users.push({name,email,password,balance:0});
 		setShow(false);
 	}    
 
@@ -164,15 +201,17 @@ const CreateAccount = (props) => {
 		status={status}
 		body={show ? (
 		<>
-		<form className="position-absolute" style={{"bottom": "25px"}}>
-			<label htmlFor="name">Name</label>
-			<input type="input" className="form-control font-weight-bold" id="name" autoComplete="on" placeholder="Enter name" value={name} onChange={(e) => {setName(e.currentTarget.value)}} /><br/>
-			<label htmlFor="email">Email Address</label>
-			<input type="input" className="form-control font-weight-bold" id="email" autoComplete="on" placeholder="Enter email" value={email} onChange={() => {validateEmail()}}/><br/>
-			<label htmlFor="password">Password <span data-toggle="tooltip" title="8 characters minimum, one uppercase, one lowercase, one number, and one special character.">?</span></label>
-			<input type="password" className="form-control font-weight-bold" id="password" autoComplete="on" placeholder="Enter password" value={password} onChange={() => {validatePassword()}} /><br/>
-			<button type="submit" className="btn btn-light" onClick={() => {handleCreate()}}>Create Account</button>
-		</form>
+		<div class="row align-items-start">
+			<form className="position-absolute" style={{ margin: "auto 1em", "bottom": "25px", "width": "66%" }}>
+				<label htmlFor="name">Name</label>
+				<input type="input" className="form-control font-weight-bold" id="name" autoComplete="on" placeholder="Enter name" value={name} onChange={(e) => {setName(e.currentTarget.value)}} /><br/>
+				<label htmlFor="email">Email Address</label>
+				<input type="input" className="form-control font-weight-bold" id="email" autoComplete="on" placeholder="Enter email" value={email} onChange={(e) => {validateEmail(e)}}/><br/>
+				<label htmlFor="password">Password <span data-toggle="tooltip" title="8 characters minimum, one uppercase, one lowercase, one number, and one special character.">?</span></label>
+				<input type="password" className="form-control font-weight-bold" id="password" autoComplete="on" placeholder="Enter password" value={password} onChange={(e) => {validatePassword(e)}} /><br/>
+				<button type="submit" className="btn btn-light" onClick={() => {handleCreate()}}>Create Account</button>
+			</form>
+		</div>
 		</>
 		):(
 			<>

@@ -1,16 +1,14 @@
 import React from 'react'
-import { Switch, Route } from 'react-router-dom'
 import { Card, UserContext } from './context';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import { setCookie, getCookie } from './util';
+import { getCookie } from './util';
 import { API_URL } from './config';
 import axios from "axios";
 
 
 const Deposit = (props) => {
 	const [depositAmount, setDepositAmount]       = React.useState(0);
-	const [balance, setBalance]						= React.useState(0);
 	const [showModal, setShowModal]					= React.useState(false);
 	const [modalTitle, setModalTitle]				= React.useState("");
 	const [modalText, setModalText]					= React.useState("");

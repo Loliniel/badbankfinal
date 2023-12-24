@@ -5,6 +5,8 @@ import { Card, UserContext } from './context';
 import { API_URL } from './config';
 import axios from "axios";
 import { getCookie, setCookie } from './util';
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
 
 
 const Login = (props) => {
@@ -13,6 +15,9 @@ const Login = (props) => {
 	//const [name, setName] = useState('');
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
+	const [showError, setShowError]					= useState(false);
+	const [errorTitle, setErrorTitle]				= useState("");
+	const [errorText, setErrorText]					= useState("");
 	const { authenticated, setAuthenticated } = useContext(UserContext);
 	//const user = React.useContext(UserContext);
 
@@ -31,10 +36,11 @@ const Login = (props) => {
 		}
 
 		if(password === '') {
-			setStatus('Error: no passdword entered.');
+			setStatus('Error: no password entered.');
 		}
 
 		console.log(`email = ${email}\npassword = ${password}`);
+		console.log(`API_URL = ${API_URL}`);
 		axios.post(API_URL + '/user/login', {
 			email: email,
 			password: password
@@ -55,6 +61,11 @@ const Login = (props) => {
 					navigate('/');
 				}, 1500);
 			} else {
+				setErrorTitle(`Error!`);
+				setErrorText(`Error: ${res.data.data}`);
+				setShowError(true);
+				setStatus(`Error`);
+				//setTimeout(() => setStatus(''),3000);
 				console.log(`Ok false: ${res.data.data}`);
 			}
 		});
@@ -72,6 +83,7 @@ const Login = (props) => {
 	}*/
 
 	return (
+		<>
 		<Card
 			headercolor="primary"
 			bodycolor="white"
@@ -86,7 +98,7 @@ const Login = (props) => {
 						<label htmlFor="password">Password</label>
 						<input type="password" className="form-control font-weight-bold" id="password" autoComplete="on" placeholder="Enter password" value={password} onChange={(e) => { setPassword(e.currentTarget.value) }} /><br />
 						<button type="submit" className="btn btn-light" onClick={() => { handleLogin() }}>Login</button>
-						<a className="btn btn-light" style={{ margin: 'auto 0.5em' }} href="http://localhost:3001/connect/google">Connect to Google</a>
+						<a className="btn btn-light" style={{ margin: 'auto 0.5em' }} href="http://ec2-18-232-152-188.compute-1.amazonaws.com:3000/connect/google">Connect to Google</a>
 					</form>
 				</>
 			) : (
@@ -96,6 +108,26 @@ const Login = (props) => {
 				</>
 			)}
 		/>
+		
+		<Modal
+		size="sm"
+		show={showError}
+		onHide={() => setShowError(false)}
+		aria-labelledby="example-modal-sizes-title-sm"
+		>
+			<Modal.Header closeButton>
+				<Modal.Title id="example-modal-sizes-title-sm">
+				{errorTitle}
+				</Modal.Title>
+			</Modal.Header>
+			<Modal.Body>{errorText}</Modal.Body>
+			<Modal.Footer>
+				<Button onClick={() => setShowError(false)} variant="secondary">
+					Close
+				</Button>
+			</Modal.Footer>
+		</Modal>
+		</>
 	)
 }
 
